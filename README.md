@@ -10,15 +10,20 @@
 <li><a href="#sec-3-2">3.2. Send to Server</a></li>
 </ul>
 </li>
+<li><a href="#sec-4">4. Send/Recv to Server in a re-frame event</a></li>
+<li><a href="#sec-5">5. Subscribing to server messages</a></li>
 </ul>
 </div>
 </div>
+
+This project use the cljs lib [ftravers/transit-websocket-client](https://github.com/ftravers/transit-websocket-client).
+It should be paired with [ftravers/websocket-server](https://github.com/ftravers/websocket-server)
 
 # Setup<a id="sec-1" name="sec-1"></a>
 
 Add to project:
 
-![](https://clojars.org/fentontravers/reframe-websocket/latest-version.svg)
+![https://clojars.org/fentontravers/reframe-websocket/](https://clojars.org/fentontravers/reframe-websocket/latest-version.svg)
 
 ```clojure
     (ns ...
@@ -59,4 +64,71 @@ handler called `:set` to be used like:
     ;; retrieve the response
     @(reframe/subscribe [:get [:store :path]])
 
+```
+
+# Send/Recv to Server in a re-frame event<a id="sec-4" name="sec-4"></a>
+
+## Define your endpoint<a id="sec-4-1" name="sec-4-1"></a>
+
+```clojure
+    (def my-aws (reframe-websocket/async-websocket "ws://localhost:7890"))
+
+```
+
+## Write an interceptor<a id="sec-4-2" name="sec-4-2"></a>
+
+```clojure
+    (defn ws-send-msg
+      [path-msg path-resp db]
+      (reframe-websocket/send-msg (get-in db path-msg) path-resp aws))
+
+    (def path-msg [:send-msg :msg])
+    (def path-resp [:send-msg :resp])
+    (def ws-send-msg-interceptor (rf/after (partial ws-send-msg path-msg path-resp)))
+
+```
+
+## Add it to an event<a id="sec-4-3" name="sec-4-3"></a>
+
+```clojure
+    (rf/reg-event-db
+      ::send-msg
+      [ws-send-msg-interceptor]
+      (fn-traced [db [_ msg]]
+        (assoc-in db path-msg msg)))
+```
+
+
+# Subscribing to server message <a id="sec-5" name="sec-5"></a>
+
+If you use [ftravers/websocket-server](https://github.com/ftravers/websocket-server) as the server websocket,
+you should start your server with these input and output functions:
+
+```clojure
+    (start-ws-server
+        port
+        (fn [[store-path data]]
+          [store-path (handle data)])
+        (fn [s]
+          (let [[_ rf-msg] (json/read-str s)]
+            (read-string rf-msg)))
+        (fn [msg]
+          (json/write-str
+            ["~#'" (str msg)])))
+(send-all! port [[:back-msg] "Message from backend"])
+(send-all! port [[:back-msg] {:map 134 :text "EDN from backend"}])
+```
+
+You can then send message from the backend with send-all. They will be stored in [:store :path] of your app-db
+and trigger the subscribes.
+
+```clojure
+    ; String
+    (send-all! port [[:store :path] "Message from backend"])])
+
+    ; EDN
+    (send-all! port [[:store :path] {:map "Hello" :text "EDN from backend"}])])
+
+    ; You can subscribe to them as for responses to client requests:
+    @(reframe/subscribe [:get [:store :path]])
 ```

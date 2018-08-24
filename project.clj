@@ -1,4 +1,4 @@
-(defproject fentontravers/reframe-websocket "0.1.5-SNAPSHOT"
+(defproject fentontravers/reframe-websocket "0.1.5"
   :description "Wraps basic reframe, websocket, and transit capabilities for communicating to a server."
   :url "https://github.com/ftravers/reframe-websocket"
   :license {:name "Eclipse Public License"
@@ -11,7 +11,7 @@
                  [fentontravers/transit-websocket-client "0.4.11"]]
 
   :plugins [[lein-cljsbuild "1.1.7"  :exclusions [[org.clojure/clojure]]]
-            [lein-figwheel "0.5.13"]]
+            [lein-figwheel "0.5.14"]]
 
   :source-paths ["src/cljs" "src/cljc"]
 
@@ -39,5 +39,5 @@
               :plugins [[cider/cider-nrepl "0.16.0-SNAPSHOT"]]
               :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
               :clean-targets ^{:protect false} ["resources/public/js/compiled"
-                                                :target-path]}}
-)
+                                                :target-path]}})
+
