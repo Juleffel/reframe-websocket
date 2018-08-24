@@ -115,8 +115,6 @@ you should start your server with these input and output functions:
         (fn [msg]
           (json/write-str
             ["~#'" (str msg)])))
-(send-all! port [[:back-msg] "Message from backend"])
-(send-all! port [[:back-msg] {:map 134 :text "EDN from backend"}])
 ```
 
 You can then send message from the backend with send-all. They will be stored in [:store :path] of your app-db
