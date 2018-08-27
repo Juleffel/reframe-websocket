@@ -107,11 +107,14 @@ you should start your server with these input and output functions:
 ```clojure
     (start-ws-server
         port
+        :on-receive
         (fn [[store-path data]]
           [store-path (handle data)])
+        :in-fn
         (fn [s]
           (let [[_ rf-msg] (json/read-str s)]
             (read-string rf-msg)))
+        :out-fn
         (fn [msg]
           (json/write-str
             ["~#'" (str msg)])))
