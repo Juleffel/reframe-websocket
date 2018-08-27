@@ -23,7 +23,7 @@ It should be paired with [ftravers/websocket-server](https://github.com/ftravers
 
 Add to project:
 
-![https://clojars.org/fentontravers/reframe-websocket/](https://clojars.org/fentontravers/reframe-websocket/latest-version.svg)
+<a href="https://clojars.org/juleffel/reframe-websocket/" target="_blank">![Foo](https://clojars.org/fentontravers/reframe-websocket/latest-version.svg)]</a>
 
 ```clojure
     (ns ...
