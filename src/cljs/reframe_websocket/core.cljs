@@ -5,17 +5,22 @@
             [cljs.core.async :refer [<! >! offer!]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
-(defn recv-msgs [aws]
+(defn recv-msgs
+  [aws fire-event]
   (go-loop
     []
-    (let [[store-path msg] (reader/read-string (<! aws))]
-      (rf/dispatch [:set store-path msg])
+    (let [[store-path data] (reader/read-string (<! aws))]
+      (rf/dispatch [:set store-path data])
+      (if fire-event (rf/dispatch [fire-event store-path data]))
       (recur))))
 
-(defn async-websocket [ws-url]
-  (let [aws (websocket/async-websocket ws-url)]
-    (recv-msgs aws)
-    aws))
+(defn async-websocket
+  ([ws-url]
+   (async-websocket ws-url nil))
+  ([ws-url fire-event]
+   (let [aws (websocket/async-websocket ws-url)]
+     (recv-msgs aws fire-event)
+     aws)))
 
 (rf/reg-event-db
  :set

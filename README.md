@@ -133,3 +133,23 @@ and trigger the subscribes.
     ; You can subscribe to them as for responses to client requests:
     @(reframe/subscribe [:get [:store :path]])
 ```
+
+If you need to do something else when receiving a message (more than just set the value into app-db at store-path),
+you can add a key to `reframe-websocket/async-websocket`. This event key will be dispatched each time a message is received
+with the store-path and msg.
+
+```clojure
+    ; Register a custom event to handle received messages from websocket
+    (rf/reg-event-db
+     :set-ws
+     (fn [db [_ store-path data]]
+       (if (= store-path [:ws :hello])
+        (assoc db :hello (hello data))))
+
+    ; Give the key of this event to
+    (def my-aws (reframe-websocket/async-websocket "ws://localhost:7890" :set-ws))
+```
+
+In this case, pay attention to a few things:
+- `:set` is still executed and `data` will be set in `app-db store-path`
+- `:set-ws` event will be executed both for messages coming from the server as for the responses to messages from client
